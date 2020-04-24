@@ -227,16 +227,24 @@ void runBreathe() {
   fill_solid(thanosLeds, 0, NUM_THANOS_LEDS, CHSV(hue, sat, val));
 }
 
-uint8_t beatStones() {
+bool sineFadeInStones() {
   uint32_t diff = (millis() - startTime) * PI * 100 / 1000;
-  Serial.print(millis() - startTime);
-  Serial.print(" : ");
-  Serial.println(sin8(diff));
   uint8 val = sin8(diff);
   //uint8 val = beatsin8(30, 0, thanosMaxBrightness, startTime);
   fill_solid(thanosLeds, 0, NUM_THANOS_LEDS, CHSV(0, 255, val));
-  return val;
+ // Serial.println(millis() - startTime);
+  return val >= 250;
 }
+
+bool sineFadeOutStones() {
+  uint32_t diff = (millis() - startTime) * PI * 100 / 1000;
+  uint8 val = sin8(diff);
+  //uint8 val = beatsin8(30, 0, thanosMaxBrightness, startTime);
+  fill_solid(thanosLeds, 0, NUM_THANOS_LEDS, CHSV(0, 255, val));
+ // Serial.println(millis() - startTime);
+  return val <= 5;
+}
+
 
 /*  BREATH END   */
 
@@ -265,6 +273,49 @@ void wifiAndOta() {
   ArduinoOTA.handle();
 }
 
+void thanosLoop() {
+ static bool fadedIn = false;
+  static bool fadedOut = true;
+
+  uint16_t resumeDelta;
+
+static uint16_t timeDelta;
+
+  EVERY_N_MILLISECONDS_I(beatTimeout, 20) { 
+
+    timeDelta = millis() - startTime;
+    
+    
+    
+    // if (timeDelta >= 820 && timeDelta < (820 + 3000)){
+
+    // }
+
+    beatTimeout.setPeriod(20);
+    if(!fadedIn && fadedOut){
+      fadedIn = sineFadeInStones();
+
+    }
+
+    if(fadedIn){
+      resumeDelta = millis() - startTime;
+      Serial.println(resumeDelta);
+      beatTimeout.setPeriod(3000);
+      fadedOut = false;
+      startTime = millis() - resumeDelta + 3000;
+    }
+
+    if(!fadedOut && !fadedIn){
+      fadedOut = sineFadeOutStones();
+    }
+
+    if(fadedIn){
+      fadedIn = false;
+    }
+
+  };
+}
+
 void loop() {
 
   // cometAnim(cometALeds, NUM_COMET_TR_LEDS);
@@ -290,16 +341,12 @@ void loop() {
     previousHue = cometHue;
   }
 
+  thanosLoop();
+
   // cometAnim(cometTrB);
   //animThanos();
   //breathLoop();
-  uint8_t thanoValue = 0;
-  //static bool startTime = millis();
-  EVERY_N_MILLISECONDS_I(beatTimeout, 20) { 
-    thanoValue = beatStones();
-    //beatTimeout.setPeriod(20);
-
-  };
+ 
 
   // if(thanoValue >= thanosMaxBrightness - 1){
   //   beatTimeout.setPeriod(2000);
