@@ -228,8 +228,10 @@ void runBreathe() {
 }
 
 bool sineFadeInStones() {
-  uint32_t diff = (millis() - startTime) * PI * 100 / 1000;
+  uint32_t diff = (millis() - startTime + 613) * PI / 10;
   uint8 val = sin8(diff);
+  Serial.printf("IN  DIFF: %u sine8: %u \n", millis() - startTime, sin8(diff));
+
   //uint8 val = beatsin8(30, 0, thanosMaxBrightness, startTime);
   fill_solid(thanosLeds, 0, NUM_THANOS_LEDS, CHSV(0, 255, val));
  // Serial.println(millis() - startTime);
@@ -237,9 +239,10 @@ bool sineFadeInStones() {
 }
 
 bool sineFadeOutStones() {
-  uint32_t diff = (millis() - startTime) * PI * 100 / 1000;
+  uint32_t diff = (millis() - startTime + 613) * PI / 10;
   uint8 val = sin8(diff);
   //uint8 val = beatsin8(30, 0, thanosMaxBrightness, startTime);
+  Serial.printf("OUT DIFF: %u sine8: %u \n", millis() - startTime, sin8(diff));
   fill_solid(thanosLeds, 0, NUM_THANOS_LEDS, CHSV(0, 255, val));
  // Serial.println(millis() - startTime);
   return val <= 5;
@@ -274,43 +277,23 @@ void wifiAndOta() {
 }
 
 void thanosLoop() {
- static bool fadedIn = false;
-  static bool fadedOut = true;
-
-  uint16_t resumeDelta;
+ 
 
 static uint16_t timeDelta;
+static uint16_t fadeDuration = 420; // ~ time for one fade cycle
+static uint16_t pauseDuration = 3234; // ~ time to hit next fade out (peak) cycle after pause
 
   EVERY_N_MILLISECONDS_I(beatTimeout, 20) { 
-
     timeDelta = millis() - startTime;
     
-    
-    
-    // if (timeDelta >= 820 && timeDelta < (820 + 3000)){
+    if(timeDelta < fadeDuration ){
+      sineFadeInStones();
+    } else if (timeDelta >= fadeDuration && timeDelta < pauseDuration + fadeDuration){
 
-    // }
-
-    beatTimeout.setPeriod(20);
-    if(!fadedIn && fadedOut){
-      fadedIn = sineFadeInStones();
-
-    }
-
-    if(fadedIn){
-      resumeDelta = millis() - startTime;
-      Serial.println(resumeDelta);
-      beatTimeout.setPeriod(3000);
-      fadedOut = false;
-      startTime = millis() - resumeDelta + 3000;
-    }
-
-    if(!fadedOut && !fadedIn){
-      fadedOut = sineFadeOutStones();
-    }
-
-    if(fadedIn){
-      fadedIn = false;
+     } else if(timeDelta >= pauseDuration + fadeDuration && timeDelta < pauseDuration + fadeDuration * 2){
+      sineFadeOutStones();
+    } else if(timeDelta >= pauseDuration + fadeDuration * 2){
+      startTime = millis();
     }
 
   };
