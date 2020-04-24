@@ -1,15 +1,17 @@
 #define FASTLED_ESP8266_NODEMCU_PIN_ORDER
+#define ENCODER_DO_NOT_USE_INTERRUPTS
 
 #include <ArduinoOTA.h>
 #include <ESP8266WebServer.h>
 #include <ESP8266WiFi.h>
 #include <ESP8266WiFiMulti.h>
 #include <FastLED.h>
-#include <creds.h>
-#include <ota.h>
+#include <Encoder.h>
 
 #include <string>
 
+#include "creds.h"
+#include "ota.h"
 #include "api.h"
 #include "comet.h"
 #include "common.h"
@@ -26,6 +28,12 @@ bool isOff = false;
 #define COMET_TL_PIN 2
 #define SHIELD_STAR_PIN 3
 #define STAR_A_COMET_L_PIN 4
+
+/* Rotary PINS are Actual GPIO Pins not NODEMCU_PIN_ORDER */
+#define ROTARY_PIN_A 12
+#define ROTARY_PIN_B 13
+#define ROTARY_SWITCH_PIN D8
+
 
 #define NUM_COMET_TR_LEDS 65
 #define NUM_COMET_TR_A_LEDS 16
@@ -50,7 +58,10 @@ bool isOff = false;
 #define NUM_COMET_L_B_LEDS 10
 #define NUM_COMET_L_C_LEDS 17
 
+uint8_t cometHue = 130;
 uint8_t cometBrightness = 180;
+uint8_t thanosMaxBrightness = 200;
+uint32_t startTime;
 
 /* Top Right Comets */
 CRGB cometTrLeds[NUM_COMET_TR_LEDS];
@@ -76,8 +87,7 @@ CRGB *cometLeftALeds = &starACometLeftLeds[NUM_STAR_A_LEDS];
 CRGB *cometLeftBLeds = &starACometLeftLeds[NUM_STAR_A_LEDS + NUM_COMET_L_A_LEDS];
 CRGB *cometLeftCLeds = &starACometLeftLeds[NUM_STAR_A_LEDS + NUM_COMET_L_A_LEDS + NUM_COMET_L_B_LEDS];
 
-
-uint8_t hueValue = 130;
+Encoder encoder(ROTARY_PIN_A, ROTARY_PIN_B);
 
 void fill_solid(struct CRGB *targetArray, int startFill, int numToFill,
                 const struct CHSV &hsvColor) {
@@ -123,10 +133,10 @@ void setLed(CRGB *cometLeds, uint8_t position, uint8_t numLeds, CHSV color) {
 }
 
 void cometAnim(Comet &comet) {
-  comet.setLed(CHSV(hueValue, 255, cometBrightness));
+  comet.setLed(CHSV(cometHue, 255, cometBrightness));
   /* Set Trail Color */
   uint8_t brightness = random(40, 80);
-  comet.setLed(comet.position - 1, CHSV(hueValue + 40, 255, brightness));
+  comet.setLed(comet.position - 1, CHSV(cometHue + 40, 255, brightness));
   comet.fadeAll(8);
   comet.position++;
 
@@ -161,18 +171,22 @@ void cometAnim(Comet &comet) {
 //   }
 // }
 
+
 void setup() {
   Serial.begin(115200);
-  delay(10);
+  delay(1000);
   initWifi();
   initOTA();
   initApi();
+
+  encoder.write(cometHue);
 
   FastLED.setMaxPowerInVoltsAndMilliamps(5, 900);
   FastLED.addLeds<NEOPIXEL, COMET_TR_PIN>(cometTrLeds, NUM_COMET_TR_LEDS);
   FastLED.addLeds<NEOPIXEL, COMET_TL_PIN>(topLeftLeds, NUM_COMET_TL_THANOS_WAR_MACHINE_TOTAL);
   FastLED.addLeds<NEOPIXEL, SHIELD_STAR_PIN>(shieldStarBLeds, NUM_SHIELD_STAR_B_TOTAL);
   FastLED.addLeds<NEOPIXEL, STAR_A_COMET_L_PIN>(starACometLeftLeds, NUM_STAR_A_COMET_L_TOTAL);
+  startTime = millis();
 }
 
 void animThanos() {
@@ -209,8 +223,19 @@ void runBreathe() {
   val = valueMin + dV;
   hue = map(val, valueMin, valueMax, hueA, hueB);  // Map hue based on current val
   sat = map(val, valueMin, valueMax, satA, satB);  // Map sat based on current val
-
+  
   fill_solid(thanosLeds, 0, NUM_THANOS_LEDS, CHSV(hue, sat, val));
+}
+
+uint8_t beatStones() {
+  uint32_t diff = (millis() - startTime) * PI * 100 / 1000;
+  Serial.print(millis() - startTime);
+  Serial.print(" : ");
+  Serial.println(sin8(diff));
+  uint8 val = sin8(diff);
+  //uint8 val = beatsin8(30, 0, thanosMaxBrightness, startTime);
+  fill_solid(thanosLeds, 0, NUM_THANOS_LEDS, CHSV(0, 255, val));
+  return val;
 }
 
 /*  BREATH END   */
@@ -230,7 +255,18 @@ Comet cometLeftA(cometLeftALeds, NUM_COMET_L_A_LEDS, true);
 Comet cometLeftB(cometLeftBLeds, NUM_COMET_L_B_LEDS, false);
 Comet cometLeftC(cometLeftCLeds, NUM_COMET_L_C_LEDS, false);
 
+uint8_t previousHue = cometHue;
+
+void wifiAndOta() {
+  WiFiClient client = server.available();
+  if (client.connected()) {
+    app.process(&client);
+  }
+  ArduinoOTA.handle();
+}
+
 void loop() {
+
   // cometAnim(cometALeds, NUM_COMET_TR_LEDS);
   //fill_solid(cometTrLeds, 0, NUM_COMET_TR_LEDS, CHSV(20,20,20));
   //fill_solid(shieldStarBLeds, 0, NUM_SHIELD_STAR_B_TOTAL, CHSV(20, 255, 30));
@@ -247,21 +283,31 @@ void loop() {
   // EVERY_N_MILLISECONDS_I(t7, 60) { cometAnim(cometLeftA); };
   // EVERY_N_MILLISECONDS_I(t8, 60) { cometAnim(cometLeftB); };
   // EVERY_N_MILLISECONDS_I(t9, 60) { cometAnim(cometLeftC); };
+  
+
+  cometHue = encoder.read();
+  if (cometHue != previousHue) {
+    previousHue = cometHue;
+  }
 
   // cometAnim(cometTrB);
   //animThanos();
   //breathLoop();
+  uint8_t thanoValue = 0;
+  //static bool startTime = millis();
+  EVERY_N_MILLISECONDS_I(beatTimeout, 20) { 
+    thanoValue = beatStones();
+    //beatTimeout.setPeriod(20);
 
-  EVERY_N_MILLISECONDS_I(t1, 20) { 
-    runBreathe();
   };
 
+  // if(thanoValue >= thanosMaxBrightness - 1){
+  //   beatTimeout.setPeriod(2000);
+  //   startTime = millis() + 30;
+  // }
+
   FastLED.show();
-  WiFiClient client = server.available();
-  if (client.connected()) {
-    app.process(&client);
-  }
-  ArduinoOTA.handle();
+  wifiAndOta();
 
   // if (!isOff) {
 
