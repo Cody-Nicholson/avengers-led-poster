@@ -1,3 +1,48 @@
+
+
+
+
+
+/* BREATHE TEST 2 
+static float pulseSpeed = 1.4;  // Larger value gives faster pulse.
+
+uint8_t hueA = 66;       // Start hue at valueMin.
+uint8_t satA = 200;      // Start saturation at valueMin.
+float valueMin = 120.0;  // Pulse minimum value (Should be less then valueMax).
+
+uint8_t hueB = 83;   // End hue at valueMax.
+uint8_t satB = 255;  // End saturation at valueMax.
+float valueMax =
+    200.0;  // Pulse maximum value (Should be larger then valueMin).
+
+uint8_t hue = hueA;                                       // Do Not Edit
+uint8_t sat = satA;                                       // Do Not Edit
+float val = valueMin;                                     // Do Not Edit
+uint8_t hueDelta = hueA - hueB;                           // Do Not Edit
+static float delta = (valueMax - valueMin) / 2.35040238;  // Do Not Edit
+
+void runBreathe() {
+
+
+  
+  /*  Formula (exp(sin(x)) - 1/e) * 255 / (e - 1/e)  */
+  /* float dV =
+      ((exp(sin(pulseSpeed * millis() / 2000.0 * PI)) - 0.36787944) * delta);
+  val = valueMin + dV;
+  hue =
+      map(val, valueMin, valueMax, hueA, hueB);  // Map hue based on current val
+  sat =
+      map(val, valueMin, valueMax, satA, satB);  // Map sat based on current val
+
+  fill_solid(thanosLeds, 0, NUM_THANOS_LEDS, CHSV(hue, sat, val));
+}
+
+*/
+
+
+
+
+
 // /* ==================================================================================================================================================
 //          Project: NeoPixel Playground
 // Neopixel chipset: ws2812B  (144 LED/m strip)
