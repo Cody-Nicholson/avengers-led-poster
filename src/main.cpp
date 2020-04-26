@@ -24,10 +24,15 @@ boolean wasOff = false;
 boolean wasOn = false;
 bool isOff = false;
 
+#define AVENGERS_PIN 8
 #define COMET_TR_PIN 1
 #define COMET_TL_PIN 2
 #define SHIELD_STAR_PIN 3
 #define STAR_A_COMET_L_PIN 4
+
+#define NUM_AVENGERS_LEDS 86
+#define NUM_AVENGERS_ROW 21
+#define NUM_AVENGERS_LAST_ROW 23
 
 /* Rotary PINS are Actual GPIO Pins not NODEMCU_PIN_ORDER */
 #define ROTARY_PIN_A 12
@@ -61,6 +66,8 @@ uint8_t previousHue = cometHue;
 uint8_t cometBrightness = 180;
 uint8_t thanosMaxBrightness = 200;
 uint32_t startTime;
+
+CRGB avengersLeds[NUM_AVENGERS_LEDS];
 
 /* Top Right Comets */
 CRGB cometTrLeds[NUM_COMET_TR_LEDS];
@@ -187,28 +194,6 @@ void fillStar() {
 //   }
 // }
 
-void setup() {
-  Serial.begin(115200);
-  delay(1000);
-  initWifi();
-  initOTA();
-  initApi();
-
-  encoder.write(cometHue);
-
-  FastLED.setMaxPowerInVoltsAndMilliamps(5, 800);
-  FastLED.addLeds<NEOPIXEL, COMET_TR_PIN>(cometTrLeds, NUM_COMET_TR_LEDS);
-  FastLED.addLeds<NEOPIXEL, COMET_TL_PIN>(
-      topLeftLeds, NUM_COMET_TL_THANOS_WAR_MACHINE_TOTAL);
-  FastLED.addLeds<NEOPIXEL, SHIELD_STAR_PIN>(shieldStarBLeds,
-                                             NUM_SHIELD_STAR_B_TOTAL);
-  FastLED.addLeds<NEOPIXEL, STAR_A_COMET_L_PIN>(starACometLeftLeds,
-                                                NUM_STAR_A_COMET_L_TOTAL);
-  startTime = millis();
-
-  fillStar();
-}
-
 /* War machine Pulse (Breathe) loop FINAL */
 void warMachinePulseLoop() {
   float breath = (exp(sin(millis() / 2000.0 * PI)) - 0.36787944) * 108.0;
@@ -229,14 +214,13 @@ bool sineFadeOutStones() {
   uint32_t diff = (millis() - startTime + 613) * PI / 10;
   uint8 val = sin8(diff);
   // uint8 val = beatsin8(30, 0, thanosMaxBrightness, startTime);
-  Serial.printf("OUT DIFF: %u sine8: %u \n", millis() - startTime, sin8(diff));
+  // Serial.printf("OUT DIFF: %u sine8: %u \n", millis() - startTime,
+  // sin8(diff));
   fill_solid(thanosLeds, 0, NUM_THANOS_LEDS,
              CHSV(infinityStoneHues[currentStoneIndex], 255, val));
   // Serial.println(millis() - startTime);
   return val <= 5;
 }
-
-/* Gloabal Modifiers  */
 
 Comet cometTrA(cometTrALeds, NUM_COMET_TR_A_LEDS, true);
 Comet cometTrB(cometTrBLeds, NUM_COMET_TR_B_LEDS, false);
@@ -260,9 +244,10 @@ void wifiAndOta() {
 
 void thanosLoop() {
   static uint16_t timeDelta;
-  static uint16_t fadeDuration = 420;  // ~ time for one fade cycle
-  static uint16_t pauseDuration =
-      3234;  // ~ time to hit next fade out (peak) cycle after pause
+  // ~ time for one fade cycle
+  static uint16_t fadeDuration = 420;
+  // ~ time to hit next fade out (peak) cycle after pause
+  static uint16_t pauseDuration = 3234;
 
   EVERY_N_MILLISECONDS_I(beatTimeout, 20) {
     timeDelta = millis() - startTime;
@@ -289,12 +274,59 @@ void nextCometFrame(Comet &comet, CEveryNMillis &timer) {
   }
 }
 
-void loop() {
-  // cometAnim(cometALeds, NUM_COMET_TR_LEDS);
-  // fill_solid(shieldStarBLeds, 0, NUM_SHIELD_STAR_B_TOTAL, CHSV(20, 255, 30));
-  // fill_solid(starACometLeftLeds, 0, NUM_STAR_A_COMET_L_TOTAL,
-  // CHSV(70,255,20));
+void readEncoder() {
+  cometHue = encoder.read();
+  if (cometHue != previousHue) {
+    previousHue = cometHue;
+  }
+}
 
+uint8_t rightBrightness = 0;
+
+uint8_t min(uint8_t a, uint8_t b) {
+  return (b > a) ? a : b;  // or: return !comp(b,a)?a:b; for version (2)
+}
+
+void avengersIntro() {
+  EVERY_N_MILLISECONDS(20) {
+    rightBrightness += 1;
+    rightBrightness = min(rightBrightness, 150);
+    for (uint8 i = 0; i < NUM_AVENGERS_LEDS; i++) {
+      if (i % 2 == 1) {
+        avengersLeds[i] = CHSV(0, 255, rightBrightness);
+      }
+    }
+  }
+}
+
+void staticFills() {
+  fillStar();
+  //fill_solid(avengersLeds, 0, NUM_AVENGERS_LEDS, CHSV(0, 0, 40));
+}
+
+void setup() {
+  Serial.begin(115200);
+  delay(1000);
+  initWifi();
+  initOTA();
+  initApi();
+
+  encoder.write(cometHue);
+
+  FastLED.setMaxPowerInVoltsAndMilliamps(5, 800);
+  FastLED.addLeds<NEOPIXEL, AVENGERS_PIN>(avengersLeds, NUM_AVENGERS_LEDS);
+  FastLED.addLeds<NEOPIXEL, COMET_TR_PIN>(cometTrLeds, NUM_COMET_TR_LEDS);
+  FastLED.addLeds<NEOPIXEL, COMET_TL_PIN>(
+      topLeftLeds, NUM_COMET_TL_THANOS_WAR_MACHINE_TOTAL);
+  FastLED.addLeds<NEOPIXEL, SHIELD_STAR_PIN>(shieldStarBLeds,
+                                             NUM_SHIELD_STAR_B_TOTAL);
+  FastLED.addLeds<NEOPIXEL, STAR_A_COMET_L_PIN>(starACometLeftLeds,
+                                                NUM_STAR_A_COMET_L_TOTAL);
+  startTime = millis();
+  staticFills();
+}
+
+void loopComets() {
   EVERY_N_MILLISECONDS_I(t1, 60) { nextCometFrame(cometTrA, t1); };
   EVERY_N_MILLISECONDS_I(t2, 60) { nextCometFrame(cometTrB, t2); };
   EVERY_N_MILLISECONDS_I(t3, 60) { nextCometFrame(cometTrC, t3); };
@@ -306,18 +338,14 @@ void loop() {
   EVERY_N_MILLISECONDS_I(t7, 60) { nextCometFrame(cometLeftA, t7); };
   EVERY_N_MILLISECONDS_I(t8, 60) { nextCometFrame(cometLeftB, t8); };
   EVERY_N_MILLISECONDS_I(t9, 60) { nextCometFrame(cometLeftC, t9); };
+}
 
-  cometHue = encoder.read();
-  if (cometHue != previousHue) {
-    previousHue = cometHue;
-  }
-
-  thanosLoop();
-
-  // cometAnim(cometTrB);
-  // animThanos();
-  warMachinePulseLoop();
-
+void loop() {
+  readEncoder();
+  //avengersIntro();
+  //loopComets();
+  //thanosLoop();
+  //warMachinePulseLoop();
   FastLED.show();
   wifiAndOta();
 
