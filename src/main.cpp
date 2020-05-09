@@ -24,11 +24,12 @@ boolean wasOff = false;
 boolean wasOn = false;
 bool isOff = false;
 
-#define AVENGERS_PIN 8
 #define COMET_TR_PIN 1
 #define COMET_TL_PIN 2
 #define SHIELD_STAR_PIN 3
 #define STAR_A_COMET_L_PIN 4
+#define FACES_PIN 5
+#define AVENGERS_PIN 8
 
 #define NUM_AVENGERS_LEDS 86
 #define NUM_AVENGERS_ROW 21
@@ -51,7 +52,7 @@ bool isOff = false;
 #define NUM_THANOS_LEDS 7
 #define NUM_WAR_MACHINE_LEDS 2
 
-#define NUM_SHIELD_STAR_B_TOTAL 18
+#define NUM_SHIELD_STAR_B_TOTAL 19
 #define NUM_SHIELD_LEDS 16
 #define NUM_STAR_B_LEDS 2
 
@@ -60,6 +61,8 @@ bool isOff = false;
 #define NUM_COMET_L_A_LEDS 16
 #define NUM_COMET_L_B_LEDS 10
 #define NUM_COMET_L_C_LEDS 17
+
+#define NUM_FACES_LEDS 12
 
 uint8_t cometHue = 130;
 uint8_t previousHue = cometHue;
@@ -99,8 +102,12 @@ CRGB *cometLeftCLeds =
     &starACometLeftLeds[NUM_STAR_A_LEDS + NUM_COMET_L_A_LEDS +
                         NUM_COMET_L_B_LEDS];
 
+CRGB faceLeds[NUM_FACES_LEDS];
+CRGB *loneFace = &shieldStarBLeds[NUM_SHIELD_STAR_B_TOTAL - 1];                     
+
 Encoder encoder(ROTARY_PIN_A, ROTARY_PIN_B);
 
+// 28 - Red /  32 - Orange  / 96 - Green / 160 - Blue / 192 - Purple / 64 - Yellow
 uint8_t infinityStoneHues[6] = {0, 28, 96, 160, 192, 64};
 uint8_t currentStoneIndex = 0;
 
@@ -299,8 +306,19 @@ void avengersIntro() {
   }
 }
 
+void fillShield() {
+  fill_solid(shieldStarBLeds, 0, NUM_SHIELD_LEDS, CHSV(160, 170, 100));
+}
+
+void fillFaces() {
+  fill_solid(faceLeds, 0, NUM_FACES_LEDS, CHSV(0, 0, 150));
+  fill_solid(loneFace, 0, 1, CHSV(0, 0, 150));
+}
+
 void staticFills() {
   fillStar();
+  fillShield();
+  fillFaces();
   //fill_solid(avengersLeds, 0, NUM_AVENGERS_LEDS, CHSV(0, 0, 40));
 }
 
@@ -318,10 +336,13 @@ void setup() {
   FastLED.addLeds<NEOPIXEL, COMET_TR_PIN>(cometTrLeds, NUM_COMET_TR_LEDS);
   FastLED.addLeds<NEOPIXEL, COMET_TL_PIN>(
       topLeftLeds, NUM_COMET_TL_THANOS_WAR_MACHINE_TOTAL);
+
   FastLED.addLeds<NEOPIXEL, SHIELD_STAR_PIN>(shieldStarBLeds,
                                              NUM_SHIELD_STAR_B_TOTAL);
   FastLED.addLeds<NEOPIXEL, STAR_A_COMET_L_PIN>(starACometLeftLeds,
                                                 NUM_STAR_A_COMET_L_TOTAL);
+
+  FastLED.addLeds<NEOPIXEL, FACES_PIN>(faceLeds, NUM_FACES_LEDS);
   startTime = millis();
   staticFills();
 }
@@ -343,9 +364,9 @@ void loopComets() {
 void loop() {
   readEncoder();
   //avengersIntro();
-  //loopComets();
-  //thanosLoop();
-  //warMachinePulseLoop();
+  loopComets();
+  thanosLoop();
+  warMachinePulseLoop();
   FastLED.show();
   wifiAndOta();
 
