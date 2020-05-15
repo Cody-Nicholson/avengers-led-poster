@@ -85,10 +85,8 @@ CRGB topLeftLeds[NUM_COMET_TL_THANOS_WAR_MACHINE_TOTAL];
 CRGB *cometTlALeds = topLeftLeds;
 CRGB *cometTlBLeds = &topLeftLeds[NUM_COMET_TL_A_LEDS];
 CRGB *cometTlCLeds = &topLeftLeds[NUM_COMET_TL_A_LEDS + NUM_COMET_TL_B_LEDS];
-CRGB *thanosLeds = &topLeftLeds[NUM_COMET_TL_A_LEDS + NUM_COMET_TL_B_LEDS +
-                                NUM_COMET_TL_C_LEDS];
-CRGB *warMachineLeds = &topLeftLeds[NUM_COMET_TL_A_LEDS + NUM_COMET_TL_B_LEDS +
-                                    NUM_COMET_TL_C_LEDS + NUM_THANOS_LEDS];
+CRGB *thanosLeds = &topLeftLeds[NUM_COMET_TL_A_LEDS + NUM_COMET_TL_B_LEDS + NUM_COMET_TL_C_LEDS];
+CRGB *warMachineLeds = &topLeftLeds[NUM_COMET_TL_A_LEDS + NUM_COMET_TL_B_LEDS + NUM_COMET_TL_C_LEDS + NUM_THANOS_LEDS];
 
 /* Shield Line + Star bottom */
 CRGB shieldStarBLeds[NUM_SHIELD_STAR_B_TOTAL];
@@ -98,14 +96,11 @@ CRGB starACometLeftLeds[NUM_STAR_A_COMET_L_TOTAL];
 CRGB *starALeds = &starACometLeftLeds[0];
 
 CRGB *cometLeftALeds = &starACometLeftLeds[NUM_STAR_A_LEDS];
-CRGB *cometLeftBLeds =
-    &starACometLeftLeds[NUM_STAR_A_LEDS + NUM_COMET_L_A_LEDS];
-CRGB *cometLeftCLeds =
-    &starACometLeftLeds[NUM_STAR_A_LEDS + NUM_COMET_L_A_LEDS +
-                        NUM_COMET_L_B_LEDS];
+CRGB *cometLeftBLeds = &starACometLeftLeds[NUM_STAR_A_LEDS + NUM_COMET_L_A_LEDS];
+CRGB *cometLeftCLeds = &starACometLeftLeds[NUM_STAR_A_LEDS + NUM_COMET_L_A_LEDS + NUM_COMET_L_B_LEDS];
 
 CRGB faceLeds[NUM_FACES_LEDS];
-CRGB *loneFace = &shieldStarBLeds[NUM_SHIELD_STAR_B_TOTAL - 1];                     
+CRGB *loneFace = &shieldStarBLeds[NUM_SHIELD_STAR_B_TOTAL - 1];
 
 Encoder encoder(ROTARY_PIN_A, ROTARY_PIN_B);
 
@@ -113,8 +108,7 @@ Encoder encoder(ROTARY_PIN_A, ROTARY_PIN_B);
 uint8_t infinityStoneHues[6] = {0, 28, 96, 160, 192, 64};
 uint8_t currentStoneIndex = 0;
 
-void fill_solid(struct CRGB *targetArray, int startFill, int numToFill,
-                const struct CHSV &hsvColor) {
+void fill_solid(struct CRGB *targetArray, int startFill, int numToFill, const struct CHSV &hsvColor) {
   for (int i = startFill; i < startFill + numToFill; i++) {
     targetArray[i] = hsvColor;
   }
@@ -214,8 +208,7 @@ void warMachinePulseLoop() {
 bool sineFadeInStones() {
   uint32_t diff = (millis() - startTime + 613) * PI / 10;
   uint8 val = sin8(diff);
-  fill_solid(thanosLeds, 0, NUM_THANOS_LEDS,
-             CHSV(infinityStoneHues[currentStoneIndex], 255, val));
+  fill_solid(thanosLeds, 0, NUM_THANOS_LEDS, CHSV(infinityStoneHues[currentStoneIndex], 255, val));
   return val >= 250;
 }
 
@@ -225,8 +218,7 @@ bool sineFadeOutStones() {
   // uint8 val = beatsin8(30, 0, thanosMaxBrightness, startTime);
   // Serial.printf("OUT DIFF: %u sine8: %u \n", millis() - startTime,
   // sin8(diff));
-  fill_solid(thanosLeds, 0, NUM_THANOS_LEDS,
-             CHSV(infinityStoneHues[currentStoneIndex], 255, val));
+  fill_solid(thanosLeds, 0, NUM_THANOS_LEDS, CHSV(infinityStoneHues[currentStoneIndex], 255, val));
   // Serial.println(millis() - startTime);
   return val <= 5;
 }
@@ -337,15 +329,12 @@ void setup() {
   //FastLED.addLeds<NEOPIXEL, AVENGERS_PIN>(avengersLeds, NUM_AVENGERS_LEDS);
   //FastLED.addLeds<NEOPIXEL, AVENGERS_PIN>(noiseLeds, NUM_NOISE_LEDS);
   FastLED.addLeds<NEOPIXEL, AVENGERS_PIN>(noisePaletteLeds, NUM_NOISE_LEDS);
-                
-  FastLED.addLeds<NEOPIXEL, COMET_TR_PIN>(cometTrLeds, NUM_COMET_TR_LEDS);
-  FastLED.addLeds<NEOPIXEL, COMET_TL_PIN>(
-      topLeftLeds, NUM_COMET_TL_THANOS_WAR_MACHINE_TOTAL);
 
-  FastLED.addLeds<NEOPIXEL, SHIELD_STAR_PIN>(shieldStarBLeds,
-                                             NUM_SHIELD_STAR_B_TOTAL);
-  FastLED.addLeds<NEOPIXEL, STAR_A_COMET_L_PIN>(starACometLeftLeds,
-                                                NUM_STAR_A_COMET_L_TOTAL);
+  FastLED.addLeds<NEOPIXEL, COMET_TR_PIN>(cometTrLeds, NUM_COMET_TR_LEDS);
+  FastLED.addLeds<NEOPIXEL, COMET_TL_PIN>(topLeftLeds, NUM_COMET_TL_THANOS_WAR_MACHINE_TOTAL);
+
+  FastLED.addLeds<NEOPIXEL, SHIELD_STAR_PIN>(shieldStarBLeds, NUM_SHIELD_STAR_B_TOTAL);
+  FastLED.addLeds<NEOPIXEL, STAR_A_COMET_L_PIN>(starACometLeftLeds, NUM_STAR_A_COMET_L_TOTAL);
 
   FastLED.addLeds<NEOPIXEL, FACES_PIN>(faceLeds, NUM_FACES_LEDS);
   startTime = millis();
@@ -374,11 +363,9 @@ void loop() {
   //thanosLoop();
   //warMachinePulseLoop();
   //noiseLoop();
-  EVERY_N_MILLISECONDS_I(t11, 60) { 
-      noisePaletteloop();
-    
-    
-    };
+  EVERY_N_MILLISECONDS_I(t11, 60) {
+    noisePaletteloop();
+  };
   FastLED.show();
   wifiAndOta();
 
