@@ -15,6 +15,8 @@
 #include "common.h"
 #include "creds.h"
 #include "ota.h"
+//#include "noise.h"
+#include "noisePallette.h"
 
 ESP8266WiFiMulti wifiMulti;
 WiFiServer server(80);
@@ -36,8 +38,8 @@ bool isOff = false;
 #define NUM_AVENGERS_LAST_ROW 23
 
 /* Rotary PINS are Actual GPIO Pins not NODEMCU_PIN_ORDER */
-#define ROTARY_PIN_A 12
-#define ROTARY_PIN_B 13
+#define ROTARY_PIN_A 13
+#define ROTARY_PIN_B 12
 #define ROTARY_SWITCH_PIN D8
 
 #define NUM_COMET_TR_LEDS 65
@@ -332,7 +334,10 @@ void setup() {
   encoder.write(cometHue);
 
   FastLED.setMaxPowerInVoltsAndMilliamps(5, 800);
-  FastLED.addLeds<NEOPIXEL, AVENGERS_PIN>(avengersLeds, NUM_AVENGERS_LEDS);
+  //FastLED.addLeds<NEOPIXEL, AVENGERS_PIN>(avengersLeds, NUM_AVENGERS_LEDS);
+  //FastLED.addLeds<NEOPIXEL, AVENGERS_PIN>(noiseLeds, NUM_NOISE_LEDS);
+  FastLED.addLeds<NEOPIXEL, AVENGERS_PIN>(noisePaletteLeds, NUM_NOISE_LEDS);
+                
   FastLED.addLeds<NEOPIXEL, COMET_TR_PIN>(cometTrLeds, NUM_COMET_TR_LEDS);
   FastLED.addLeds<NEOPIXEL, COMET_TL_PIN>(
       topLeftLeds, NUM_COMET_TL_THANOS_WAR_MACHINE_TOTAL);
@@ -344,7 +349,8 @@ void setup() {
 
   FastLED.addLeds<NEOPIXEL, FACES_PIN>(faceLeds, NUM_FACES_LEDS);
   startTime = millis();
-  staticFills();
+  //staticFills();
+  setupNoise();
 }
 
 void loopComets() {
@@ -362,11 +368,17 @@ void loopComets() {
 }
 
 void loop() {
-  readEncoder();
+  //readEncoder();
   //avengersIntro();
-  loopComets();
-  thanosLoop();
-  warMachinePulseLoop();
+  //loopComets();
+  //thanosLoop();
+  //warMachinePulseLoop();
+  //noiseLoop();
+  EVERY_N_MILLISECONDS_I(t11, 60) { 
+      noisePaletteloop();
+    
+    
+    };
   FastLED.show();
   wifiAndOta();
 
