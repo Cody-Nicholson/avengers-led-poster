@@ -267,7 +267,7 @@ void thanosLoop() {
 
 void nextCometFrame(Comet &comet, CEveryNMillis &timer) {
   if (cometAnim(comet)) {
-    timer.setPeriod(random8() * 100);
+    timer.setPeriod(random8() * 95);
   } else {
     timer.setPeriod(60);
   }
@@ -293,11 +293,12 @@ void fillShield() {
 void fillFaces() {
   fill_solid(faceLeds, 0, NUM_FACES_LEDS, CHSV(0, 0, 150));
   fill_solid(loneFace, 0, 1, CHSV(0, 0, 150));
+  noisePaletteLeds[NUM_NOISE_LEDS - 1] = CHSV(0, 0, 150);
 }
 
 void staticFills() {
-  fillStar();
-  fillShield();
+  //fillStar();
+  //fillShield();
   fillFaces();
 }
 

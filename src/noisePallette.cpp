@@ -91,7 +91,7 @@ void mapNoiseToLEDsUsingPalette() {
       Serial.print(ledIndex);
       Serial.print(" ");
 
-      if (ledIndex != OUT_OF_RANGE_NOISE && ledIndex > 0 && ledIndex < NUM_NOISE_LEDS) {
+      if (ledIndex != OUT_OF_RANGE_NOISE && ledIndex >= 0 && ledIndex < NUM_NOISE_LEDS) {
         noisePaletteLeds[ledIndex] = color;
       }
     }
@@ -139,16 +139,16 @@ void ChangePaletteAndSettingsPeriodically() {
 
   if (lastSecond != secondHand) {
     lastSecond = secondHand;
-    // if (secondHand == 0) {
-    //   currentPalette = RainbowColors_p;
-    //   speed = 20;
-    //   scale = 30;
-    //   colorLoop = 1;
-    // }
+    if (secondHand == 0) {
+      currentPalette = HeatColors_p;
+      speed = 20;
+      scale = 20;
+      colorLoop = 0;
+    }
     if (secondHand == 5) {
       currentPalette = LavaColors_p;
       speed = 8;
-      scale = 30;
+      scale = 50;  // org 30
       colorLoop = 0;
     }
     // if (secondHand == 10) {
@@ -157,12 +157,12 @@ void ChangePaletteAndSettingsPeriodically() {
     //   scale = 30;
     //   colorLoop = 1;
     // }
-    if (secondHand == 15) {
-      currentPalette = OceanColors_p;
-      speed = 20;
-      scale = 20;
-      colorLoop = 0;
-    }
+    // if (secondHand == 15) {
+    //   currentPalette = OceanColors_p;
+    //   speed = 20;
+    //   scale = 20;
+    //   colorLoop = 0;
+    // }
     if (secondHand == 20) {  // Blue BG
       currentPalette = CloudColors_p;
       speed = 4;
@@ -185,30 +185,6 @@ void ChangePaletteAndSettingsPeriodically() {
     //   currentPalette = PartyColors_p;
     //   speed = 20;
     //   scale = 30;
-    //   colorLoop = 1;
-    // }
-    // if (secondHand == 40) {
-    //   SetupRandomPalette();
-    //   speed = 20;
-    //   scale = 20;
-    //   colorLoop = 1;
-    // }
-    // if (secondHand == 45) {
-    //   SetupRandomPalette();
-    //   speed = 50;
-    //   scale = 50;
-    //   colorLoop = 1;
-    // }
-    // if (secondHand == 50) {
-    //   SetupRandomPalette();
-    //   speed = 90;
-    //   scale = 90;
-    //   colorLoop = 1;
-    // }
-    // if (secondHand == 55) {
-    //   currentPalette = RainbowStripeColors_p;
-    //   speed = 30;
-    //   scale = 20;
     //   colorLoop = 1;
     // }
   }
@@ -243,15 +219,11 @@ uint8_t XY(uint8_t x, uint8_t y) {
     return OUT_OF_RANGE_NOISE;
   }
 
-  if (y == 1) {
-    return i - 2;
-  }
-
-  if (y == 2 || y == 3) {
+  if (y == 1 || y == 2) {
     return i - 4;
   }
 
-  if (y > 3) {
+  if (y >= 3) {
     return i - 6;
   }
 
