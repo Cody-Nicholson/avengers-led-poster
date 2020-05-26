@@ -5,6 +5,8 @@ static uint16_t x;
 static uint16_t y;
 static uint16_t z;
 
+#define OUT_OF_RANGE_NOISE 255
+
 CRGB noisePaletteLeds[NUM_NOISE_LEDS];
 
 uint16_t speed = 20;
@@ -60,6 +62,7 @@ void fillnoise8() {
 
 void mapNoiseToLEDsUsingPalette() {
   static uint8_t ihue = 0;
+  uint8_t ledIndex;
 
   for (int i = 0; i < kMatrixWidth; i++) {
     for (int j = 0; j < kMatrixHeight; j++) {
@@ -84,8 +87,15 @@ void mapNoiseToLEDsUsingPalette() {
       }
 
       CRGB color = ColorFromPalette(currentPalette, index, bri);
-      noisePaletteLeds[XY(i, j)] = color;
+      ledIndex = XY(i, j);
+      Serial.print(ledIndex);
+      Serial.print(" ");
+
+      if (ledIndex != OUT_OF_RANGE_NOISE && ledIndex > 0 && ledIndex < NUM_NOISE_LEDS) {
+        noisePaletteLeds[ledIndex] = color;
+      }
     }
+    Serial.println();
   }
 
   ihue += 1;
@@ -153,24 +163,24 @@ void ChangePaletteAndSettingsPeriodically() {
       scale = 20;
       colorLoop = 0;
     }
-    if (secondHand == 20) {
+    if (secondHand == 20) {  // Blue BG
       currentPalette = CloudColors_p;
       speed = 4;
       scale = 30;
       colorLoop = 0;
     }
-    if (secondHand == 25) { // org laval
+    if (secondHand == 25) {  // org laval
       currentPalette = LavaColors_p;
       speed = 8;
       scale = 50;
       colorLoop = 0;
     }
-    if (secondHand == 30) {
-      currentPalette = OceanColors_p;
-      speed = 20;
-      scale = 90;
-      colorLoop = 0;
-    }
+    // if (secondHand == 30) {
+    //   currentPalette = OceanColors_p;
+    //   speed = 20;
+    //   scale = 90;
+    //   colorLoop = 0;
+    // }
     // if (secondHand == 35) {
     //   currentPalette = PartyColors_p;
     //   speed = 20;
@@ -215,6 +225,7 @@ void SetupRandomPalette() {
                     CHSV(random8(), 128, 255), CHSV(random8(), 255, 255));
 }
 
+/* XY Coords to Led matrix index  */
 uint8_t XY(uint8_t x, uint8_t y) {
   uint8_t i;
 
@@ -225,6 +236,23 @@ uint8_t XY(uint8_t x, uint8_t y) {
   } else {
     // Even rows run forwards
     i = (y * kMatrixWidth) + x;
+  }
+
+  /* Special Logic for led strip having a longer 4th row */
+  if (x >= 21 && y <= 2) {
+    return OUT_OF_RANGE_NOISE;
+  }
+
+  if (y == 1) {
+    return i - 2;
+  }
+
+  if (y == 2 || y == 3) {
+    return i - 4;
+  }
+
+  if (y > 3) {
+    return i - 6;
   }
 
   return i;

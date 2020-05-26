@@ -72,8 +72,6 @@ uint8_t cometBrightness = 180;
 uint8_t thanosMaxBrightness = 200;
 uint32_t startTime;
 
-CRGB avengersLeds[NUM_AVENGERS_LEDS];
-
 /* Top Right Comets */
 CRGB cometTrLeds[NUM_COMET_TR_LEDS];
 CRGB *cometTrALeds = cometTrLeds;
@@ -288,18 +286,6 @@ uint8_t min(uint8_t a, uint8_t b) {
   return (b > a) ? a : b;  // or: return !comp(b,a)?a:b; for version (2)
 }
 
-void avengersIntro() {
-  EVERY_N_MILLISECONDS(20) {
-    rightBrightness += 1;
-    rightBrightness = min(rightBrightness, 150);
-    for (uint8 i = 0; i < NUM_AVENGERS_LEDS; i++) {
-      if (i % 2 == 1) {
-        avengersLeds[i] = CHSV(0, 255, rightBrightness);
-      }
-    }
-  }
-}
-
 void fillShield() {
   fill_solid(shieldStarBLeds, 0, NUM_SHIELD_LEDS, CHSV(160, 170, 100));
 }
@@ -313,7 +299,6 @@ void staticFills() {
   fillStar();
   fillShield();
   fillFaces();
-  //fill_solid(avengersLeds, 0, NUM_AVENGERS_LEDS, CHSV(0, 0, 40));
 }
 
 void setup() {
@@ -326,8 +311,6 @@ void setup() {
   encoder.write(cometHue);
 
   FastLED.setMaxPowerInVoltsAndMilliamps(5, 800);
-  //FastLED.addLeds<NEOPIXEL, AVENGERS_PIN>(avengersLeds, NUM_AVENGERS_LEDS);
-  //FastLED.addLeds<NEOPIXEL, AVENGERS_PIN>(noiseLeds, NUM_NOISE_LEDS);
   FastLED.addLeds<NEOPIXEL, AVENGERS_PIN>(noisePaletteLeds, NUM_NOISE_LEDS);
 
   FastLED.addLeds<NEOPIXEL, COMET_TR_PIN>(cometTrLeds, NUM_COMET_TR_LEDS);
@@ -338,7 +321,7 @@ void setup() {
 
   FastLED.addLeds<NEOPIXEL, FACES_PIN>(faceLeds, NUM_FACES_LEDS);
   startTime = millis();
-  //staticFills();
+  staticFills();
   setupNoise();
 }
 
@@ -362,7 +345,6 @@ void loop() {
   //loopComets();
   //thanosLoop();
   //warMachinePulseLoop();
-  //noiseLoop();
   EVERY_N_MILLISECONDS_I(t11, 60) {
     noisePaletteloop();
   };

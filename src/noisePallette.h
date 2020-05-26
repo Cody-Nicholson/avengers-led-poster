@@ -3,11 +3,13 @@
 
 #include <FastLED.h>
 
-const uint8_t kMatrixWidth = 21;
+const uint8_t kMatrixWidth = 23;
 const uint8_t kMatrixHeight = 4;
 
-#define MAX_DIMENSION 21
-#define NUM_NOISE_LEDS (kMatrixWidth * kMatrixHeight)
+#define MAX_DIMENSION 23
+#define MISSING_FILL 6
+// #define NUM_NOISE_LEDS (kMatrixWidth * kMatrixHeight)
+#define NUM_NOISE_LEDS (kMatrixWidth * kMatrixHeight) - MISSING_FILL + 1
 
 uint8_t XY(uint8_t x, uint8_t y);
 
