@@ -15,7 +15,6 @@
 #include "common.h"
 #include "creds.h"
 #include "ota.h"
-//#include "noise.h"
 #include "noisePallette.h"
 
 ESP8266WiFiMulti wifiMulti;
@@ -169,32 +168,6 @@ void fillStar() {
   fill_solid(starBLeds, 0, NUM_STAR_B_LEDS, CHSV(0, 0, 140));
 }
 
-// void cometAnim(CRGB *cometLeds, uint8_t numLeds) {
-//   static uint8_t position = 0;
-//   uint8_t prevPosition;
-
-//   EVERY_N_MILLISECONDS_I(thisTimer, 60) {
-//     if (position < numLeds) {
-//       // cometLeds[position] = CHSV(hueValue, 255, 180);
-//       setLed(cometLeds, position, numLeds, CHSV(hueValue, 255, 180));
-//     }
-//     prevPosition = position - 1;
-//     /* Set Trail Color */
-//     if (prevPosition >= 0 && prevPosition < numLeds) {
-//       uint8_t brightness = random(40, 80);
-//       // cometLeds[prevPosition] = CHSV(hueValue + 40, 255, brightness);
-//       setLed(cometLeds, prevPosition, numLeds,
-//              CHSV(hueValue + 40, 255, brightness));
-//     }
-
-//     fadeComet(cometLeds, numLeds, 8);
-//     position++;
-//     if (position >= numLeds + 20) {
-//       position = 0;
-//     }
-//   }
-// }
-
 /* War machine Pulse (Breathe) loop FINAL */
 void warMachinePulseLoop() {
   float breath = (exp(sin(millis() / 2000.0 * PI)) - 0.36787944) * 108.0;
@@ -250,7 +223,6 @@ void thanosLoop() {
 
   EVERY_N_MILLISECONDS_I(beatTimeout, 20) {
     timeDelta = millis() - startTime;
-
     if (timeDelta < fadeDuration) {
       sineFadeInStones();
     } else if (timeDelta >= fadeDuration &&
@@ -297,8 +269,8 @@ void fillFaces() {
 }
 
 void staticFills() {
-  //fillStar();
-  //fillShield();
+  fillStar();
+  fillShield();
   fillFaces();
 }
 
@@ -311,7 +283,7 @@ void setup() {
 
   encoder.write(cometHue);
 
-  FastLED.setMaxPowerInVoltsAndMilliamps(5, 800);
+  FastLED.setMaxPowerInVoltsAndMilliamps(5, 8000);
   FastLED.addLeds<NEOPIXEL, AVENGERS_PIN>(noisePaletteLeds, NUM_NOISE_LEDS);
 
   FastLED.addLeds<NEOPIXEL, COMET_TR_PIN>(cometTrLeds, NUM_COMET_TR_LEDS);
@@ -341,11 +313,11 @@ void loopComets() {
 }
 
 void loop() {
-  //readEncoder();
-  //avengersIntro();
-  //loopComets();
-  //thanosLoop();
-  //warMachinePulseLoop();
+  readEncoder();
+  loopComets();
+  thanosLoop();
+  warMachinePulseLoop();
+
   EVERY_N_MILLISECONDS_I(t11, 60) {
     noisePaletteloop();
   };

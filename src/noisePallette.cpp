@@ -131,7 +131,7 @@ void noisePaletteloop() {
 // 1 = 5 sec per palette
 // 2 = 10 sec per palette
 // etc
-#define HOLD_PALETTES_X_TIMES_AS_LONG 4
+#define HOLD_PALETTES_X_TIMES_AS_LONG 8
 
 void ChangePaletteAndSettingsPeriodically() {
   uint8_t secondHand = ((millis() / 1000) / HOLD_PALETTES_X_TIMES_AS_LONG) % 60;
@@ -139,13 +139,13 @@ void ChangePaletteAndSettingsPeriodically() {
 
   if (lastSecond != secondHand) {
     lastSecond = secondHand;
+    // if (secondHand == 0) {
+    //   currentPalette = HeatColors_p;
+    //   speed = 20;
+    //   scale = 20;
+    //   colorLoop = 0;
+    // }
     if (secondHand == 0) {
-      currentPalette = HeatColors_p;
-      speed = 20;
-      scale = 20;
-      colorLoop = 0;
-    }
-    if (secondHand == 5) {
       currentPalette = LavaColors_p;
       speed = 8;
       scale = 50;  // org 30
@@ -163,18 +163,18 @@ void ChangePaletteAndSettingsPeriodically() {
     //   scale = 20;
     //   colorLoop = 0;
     // }
-    if (secondHand == 20) {  // Blue BG
+    if (secondHand == 30) {  // Blue BG
       currentPalette = CloudColors_p;
       speed = 4;
       scale = 30;
       colorLoop = 0;
     }
-    if (secondHand == 25) {  // org laval
-      currentPalette = LavaColors_p;
-      speed = 8;
-      scale = 50;
-      colorLoop = 0;
-    }
+    // if (secondHand == 25) {  // org laval
+    //   currentPalette = LavaColors_p;
+    //   speed = 8;
+    //   scale = 50;
+    //   colorLoop = 0;
+    // }
     // if (secondHand == 30) {
     //   currentPalette = OceanColors_p;
     //   speed = 20;
