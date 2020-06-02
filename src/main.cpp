@@ -214,27 +214,43 @@ void wifiAndOta() {
   ArduinoOTA.handle();
 }
 
-void thanosLoop() {
-  static uint16_t timeDelta;
-  // ~ time for one fade cycle
-  static uint16_t fadeDuration = 420;
-  // ~ time to hit next fade out (peak) cycle after pause
-  static uint16_t pauseDuration = 3234;
+bool fadeInAnim = true;
+bool fadeOutAnim = false;
+bool pauseAnim = false;
 
-  EVERY_N_MILLISECONDS_I(beatTimeout, 20) {
-    timeDelta = millis() - startTime;
-    if (timeDelta < fadeDuration) {
-      sineFadeInStones();
-    } else if (timeDelta >= fadeDuration &&
-               timeDelta < pauseDuration + fadeDuration) {
-    } else if (timeDelta >= pauseDuration + fadeDuration &&
-               timeDelta < pauseDuration + fadeDuration * 2) {
-      sineFadeOutStones();
-    } else if (timeDelta >= pauseDuration + fadeDuration * 2) {
-      startTime = millis();
+bool fadeInThanos() {
+  uint8_t val = beatsin8(60, 0, 255, startTime, 192);
+  fill_solid(thanosLeds, 0, NUM_THANOS_LEDS, CHSV(infinityStoneHues[currentStoneIndex], 255, val));
+  return val <= 252;
+}
+
+bool fadeOutThanos() {
+  uint8_t val = beatsin8(60, 0, 255, startTime, 64);
+  fill_solid(thanosLeds, 0, NUM_THANOS_LEDS, CHSV(infinityStoneHues[currentStoneIndex], 255, val));
+  return val >= 4;
+}
+
+void thanosLoop() {
+  if(fadeInAnim){
+    fadeInAnim = fadeInThanos();
+    pauseAnim = !fadeInAnim;
+  }
+
+  if(millis() - startTime >= 20000 && pauseAnim){
+    fadeOutAnim = true;
+    pauseAnim = false;
+    startTime = millis();
+  }
+
+  if(fadeOutAnim){
+    fadeOutAnim = fadeOutThanos();
+    fadeInAnim = !fadeOutAnim;
+    if(fadeInAnim){
       currentStoneIndex = (currentStoneIndex + 1) % 6;
+      startTime = millis();
     }
-  };
+  }
+  
 }
 
 void nextCometFrame(Comet &comet, CEveryNMillis &timer) {

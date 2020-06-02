@@ -88,14 +88,10 @@ void mapNoiseToLEDsUsingPalette() {
 
       CRGB color = ColorFromPalette(currentPalette, index, bri);
       ledIndex = XY(i, j);
-      Serial.print(ledIndex);
-      Serial.print(" ");
-
       if (ledIndex != OUT_OF_RANGE_NOISE && ledIndex >= 0 && ledIndex < NUM_NOISE_LEDS) {
         noisePaletteLeds[ledIndex] = color;
       }
     }
-    Serial.println();
   }
 
   ihue += 1;
