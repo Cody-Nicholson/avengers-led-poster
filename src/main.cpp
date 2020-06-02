@@ -67,7 +67,7 @@ bool isOff = false;
 
 uint8_t cometHue = 130;
 uint8_t previousHue = cometHue;
-uint8_t cometBrightness = 180;
+uint8_t cometBrightness = 225;
 uint8_t thanosMaxBrightness = 200;
 uint32_t startTime;
 
@@ -151,12 +151,12 @@ void setLed(CRGB *cometLeds, uint8_t position, uint8_t numLeds, CHSV color) {
 bool cometAnim(Comet &comet) {
   comet.setLed(CHSV(cometHue, 255, cometBrightness));
   /* Set Trail Color */
-  uint8_t brightness = random(40, 80);
-  comet.setLed(comet.position - 1, CHSV(cometHue + 40, 255, brightness));
+  uint8_t trailBrightness = random(50, 100);
+  comet.setLed(comet.position - 1, CHSV(cometHue + 40, 255, trailBrightness));
   comet.fadeAll(8);
   comet.position++;
 
-  if (comet.position >= comet.numLeds + 22) {
+  if (comet.position >= comet.numLeds + 30) {
     comet.position = 0;
     return true;
   }
@@ -255,7 +255,7 @@ void thanosLoop() {
 
 void nextCometFrame(Comet &comet, CEveryNMillis &timer) {
   if (cometAnim(comet)) {
-    timer.setPeriod(random8() * 95);
+    timer.setPeriod(random8() * 95); // Decrease for less wait time between comets (comets come down more frequently)
   } else {
     timer.setPeriod(60);
   }
@@ -275,7 +275,7 @@ uint8_t min(uint8_t a, uint8_t b) {
 }
 
 void fillShield() {
-  fill_solid(shieldStarBLeds, 0, NUM_SHIELD_LEDS, CHSV(160, 170, 100));
+  fill_solid(shieldStarBLeds, 0, NUM_SHIELD_LEDS, CHSV(160, 170, 150));
 }
 
 void fillFaces() {
