@@ -7,7 +7,8 @@
         "istream": "cpp",
         "limits": "cpp",
         "streambuf": "cpp",
-        "array": "cpp"
+        "array": "cpp",
+        "random": "cpp"
     },
     "C_Cpp.clang_format_fallbackStyle": "{ BasedOnStyle: Google, IndentWidth: 2, ColumnLimit: 0}"
 }

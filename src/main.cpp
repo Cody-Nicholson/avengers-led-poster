@@ -14,8 +14,8 @@
 #include "comet.h"
 #include "common.h"
 #include "creds.h"
-#include "ota.h"
 #include "noisePallette.h"
+#include "ota.h"
 
 ESP8266WiFiMulti wifiMulti;
 WiFiServer server(80);
@@ -231,31 +231,30 @@ bool fadeOutThanos() {
 }
 
 void thanosLoop() {
-  if(fadeInAnim){
+  if (fadeInAnim) {
     fadeInAnim = fadeInThanos();
     pauseAnim = !fadeInAnim;
   }
 
-  if(millis() - startTime >= 20000 && pauseAnim){
+  if (millis() - startTime >= 20000 && pauseAnim) {
     fadeOutAnim = true;
     pauseAnim = false;
     startTime = millis();
   }
 
-  if(fadeOutAnim){
+  if (fadeOutAnim) {
     fadeOutAnim = fadeOutThanos();
     fadeInAnim = !fadeOutAnim;
-    if(fadeInAnim){
+    if (fadeInAnim) {
       currentStoneIndex = (currentStoneIndex + 1) % 6;
       startTime = millis();
     }
   }
-  
 }
 
 void nextCometFrame(Comet &comet, CEveryNMillis &timer) {
   if (cometAnim(comet)) {
-    timer.setPeriod(random8() * 95); // Decrease for less wait time between comets (comets come down more frequently)
+    timer.setPeriod(random8() * 95);  // Decrease for less wait time between comets (comets come down more frequently)
   } else {
     timer.setPeriod(60);
   }
@@ -266,12 +265,6 @@ void readEncoder() {
   if (cometHue != previousHue) {
     previousHue = cometHue;
   }
-}
-
-uint8_t rightBrightness = 0;
-
-uint8_t min(uint8_t a, uint8_t b) {
-  return (b > a) ? a : b;  // or: return !comp(b,a)?a:b; for version (2)
 }
 
 void fillShield() {
@@ -328,19 +321,21 @@ void loopComets() {
   EVERY_N_MILLISECONDS_I(t9, 60) { nextCometFrame(cometLeftC, t9); };
 }
 
-void loop() {
-  readEncoder();
-  loopComets();
-  thanosLoop();
-  warMachinePulseLoop();
-
-  EVERY_N_MILLISECONDS_I(t11, 60) {
+void avengersLogoLoop() {
+  EVERY_N_MILLISECONDS(60) {
     noisePaletteloop();
   };
-  FastLED.show();
+}
+
+void loop() {
   wifiAndOta();
 
-  // if (!isOff) {
-
-  // }
+  if (!isOff) {
+    readEncoder();
+    loopComets();
+    thanosLoop();
+    warMachinePulseLoop();
+    avengersLogoLoop();
+    FastLED.show();
+  }
 }
