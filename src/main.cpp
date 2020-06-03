@@ -137,15 +137,18 @@ void initApi() {
   server.begin();
 }
 
-void fadeComet(CRGB *cometLeds, uint8_t numLeds, uint8_t fadeVal) {
-  for (int i = 0; i < numLeds; i++) {
-    cometLeds[i].fadeToBlackBy(fadeVal);
-  }
-}
+/* Comet Init and functions */
+Comet cometTrA(cometTrALeds, NUM_COMET_TR_A_LEDS, true);
+Comet cometTrB(cometTrBLeds, NUM_COMET_TR_B_LEDS, false);
+Comet cometTrC(cometTrCLeds, NUM_COMET_TR_C_LEDS, true);
 
-void setLed(CRGB *cometLeds, uint8_t position, uint8_t numLeds, CHSV color) {
-  cometLeds[numLeds - position - 1] = color;
-}
+Comet cometTlA(cometTlALeds, NUM_COMET_TL_A_LEDS, true);
+Comet cometTlB(cometTlBLeds, NUM_COMET_TL_B_LEDS, false);
+Comet cometTlC(cometTlCLeds, NUM_COMET_TL_C_LEDS, true);
+
+Comet cometLeftA(cometLeftALeds, NUM_COMET_L_A_LEDS, true);
+Comet cometLeftB(cometLeftBLeds, NUM_COMET_L_B_LEDS, false);
+Comet cometLeftC(cometLeftCLeds, NUM_COMET_L_C_LEDS, false);
 
 /* Lights next frame, returns true if when the trail completes */
 bool cometAnim(Comet &comet) {
@@ -163,9 +166,12 @@ bool cometAnim(Comet &comet) {
   return false;
 }
 
-void fillStar() {
-  fill_solid(starALeds, 0, NUM_STAR_A_LEDS, CHSV(0, 0, 140));
-  fill_solid(starBLeds, 0, NUM_STAR_B_LEDS, CHSV(0, 0, 140));
+void nextCometFrame(Comet &comet, CEveryNMillis &timer) {
+  if (cometAnim(comet)) {
+    timer.setPeriod(random8() * 95);  // Decrease for less wait time between comets (comets come down more frequently)
+  } else {
+    timer.setPeriod(60);
+  }
 }
 
 /* War machine Pulse (Breathe) loop FINAL */
@@ -176,36 +182,6 @@ void warMachinePulseLoop() {
   warMachineLeds[1] = CHSV(HUE_RED, 255, breath);
 }
 
-bool sineFadeInStones() {
-  uint32_t diff = (millis() - startTime + 613) * PI / 10;
-  uint8 val = sin8(diff);
-  fill_solid(thanosLeds, 0, NUM_THANOS_LEDS, CHSV(infinityStoneHues[currentStoneIndex], 255, val));
-  return val >= 250;
-}
-
-bool sineFadeOutStones() {
-  uint32_t diff = (millis() - startTime + 613) * PI / 10;
-  uint8 val = sin8(diff);
-  // uint8 val = beatsin8(30, 0, thanosMaxBrightness, startTime);
-  // Serial.printf("OUT DIFF: %u sine8: %u \n", millis() - startTime,
-  // sin8(diff));
-  fill_solid(thanosLeds, 0, NUM_THANOS_LEDS, CHSV(infinityStoneHues[currentStoneIndex], 255, val));
-  // Serial.println(millis() - startTime);
-  return val <= 5;
-}
-
-Comet cometTrA(cometTrALeds, NUM_COMET_TR_A_LEDS, true);
-Comet cometTrB(cometTrBLeds, NUM_COMET_TR_B_LEDS, false);
-Comet cometTrC(cometTrCLeds, NUM_COMET_TR_C_LEDS, true);
-
-Comet cometTlA(cometTlALeds, NUM_COMET_TL_A_LEDS, true);
-Comet cometTlB(cometTlBLeds, NUM_COMET_TL_B_LEDS, false);
-Comet cometTlC(cometTlCLeds, NUM_COMET_TL_C_LEDS, true);
-
-Comet cometLeftA(cometLeftALeds, NUM_COMET_L_A_LEDS, true);
-Comet cometLeftB(cometLeftBLeds, NUM_COMET_L_B_LEDS, false);
-Comet cometLeftC(cometLeftCLeds, NUM_COMET_L_C_LEDS, false);
-
 void wifiAndOta() {
   WiFiClient client = server.available();
   if (client.connected()) {
@@ -213,6 +189,8 @@ void wifiAndOta() {
   }
   ArduinoOTA.handle();
 }
+
+/* Thanos Loop Functions as variables */
 
 bool fadeInAnim = true;
 bool fadeOutAnim = false;
@@ -252,20 +230,14 @@ void thanosLoop() {
   }
 }
 
-void nextCometFrame(Comet &comet, CEveryNMillis &timer) {
-  if (cometAnim(comet)) {
-    timer.setPeriod(random8() * 95);  // Decrease for less wait time between comets (comets come down more frequently)
-  } else {
-    timer.setPeriod(60);
-  }
-}
-
 void readEncoder() {
   cometHue = encoder.read();
   if (cometHue != previousHue) {
     previousHue = cometHue;
   }
 }
+
+/* Static light Fills */
 
 void fillShield() {
   fill_solid(shieldStarBLeds, 0, NUM_SHIELD_LEDS, CHSV(160, 170, 150));
@@ -275,6 +247,11 @@ void fillFaces() {
   fill_solid(faceLeds, 0, NUM_FACES_LEDS, CHSV(0, 0, 150));
   fill_solid(loneFace, 0, 1, CHSV(0, 0, 150));
   noisePaletteLeds[NUM_NOISE_LEDS - 1] = CHSV(0, 0, 150);
+}
+
+void fillStar() {
+  fill_solid(starALeds, 0, NUM_STAR_A_LEDS, CHSV(0, 0, 140));
+  fill_solid(starBLeds, 0, NUM_STAR_B_LEDS, CHSV(0, 0, 140));
 }
 
 void staticFills() {
