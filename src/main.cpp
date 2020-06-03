@@ -2,7 +2,6 @@
 #define ENCODER_DO_NOT_USE_INTERRUPTS
 
 #include <ArduinoOTA.h>
-#include <ESP8266WebServer.h>
 #include <ESP8266WiFi.h>
 #include <ESP8266WiFiMulti.h>
 #include <Encoder.h>
@@ -18,8 +17,6 @@
 #include "ota.h"
 
 ESP8266WiFiMulti wifiMulti;
-WiFiServer server(80);
-Application app;
 
 boolean wasOff = false;
 boolean wasOn = false;
@@ -127,15 +124,6 @@ void initWifi() {
       WiFi.localIP());  // Send the IP address of the ESP8266 to the computer
 }
 
-void initApi() {
-  app.use(&accessMiddleware);
-  app.get("/power", &readPower);
-  app.post("/power", &updatePower);
-  app.post("/color/hue", &updateHue);
-  app.post("/brightness", &updateBrightness);
-  // app.route(staticFiles());
-  server.begin();
-}
 
 /* Comet Init and functions */
 Comet cometTrA(cometTrALeds, NUM_COMET_TR_A_LEDS, true);

@@ -1,3 +1,4 @@
+#pragma once
 
 #include "aWOT.h"
 
@@ -6,3 +7,5 @@ void updatePower(Request &req, Response &res);
 void updateHue(Request &req, Response &res);
 void updateBrightness(Request &req, Response &res);
 void accessMiddleware(Request &req, Response &res);
+
+void initApi();

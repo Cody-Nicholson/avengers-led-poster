@@ -3,6 +3,8 @@
 #include "common.h"
 #include <FastLED.h>
 
+WiFiServer server(80);
+Application app;
 
 /* ROUTER API Functions  */
 void readPower(Request &req, Response &res) {
@@ -42,4 +44,14 @@ void updateBrightness(Request &req, Response &res) {
 
 void accessMiddleware(Request &req, Response &res) {
   res.set("Access-Control-Allow-Origin", "*");
+}
+
+void initApi() {
+  app.use(&accessMiddleware);
+  app.get("/power", &readPower);
+  app.post("/power", &updatePower);
+  app.post("/color/hue", &updateHue);
+  app.post("/brightness", &updateBrightness);
+  // app.route(staticFiles());
+  server.begin();
 }
