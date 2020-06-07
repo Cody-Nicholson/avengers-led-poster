@@ -4,6 +4,7 @@
 
 void turnOn() {
   isOff = false;
+  staticFills();
 }
 
 void turnOff() {

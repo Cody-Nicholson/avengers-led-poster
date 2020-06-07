@@ -4,3 +4,4 @@
 extern bool isOff;
 extern WiFiServer server;
 extern Application app;
+void staticFills();
