@@ -11,6 +11,10 @@ void readPower(Request &req, Response &res) {
   res.print(isOff ? "off" : "on");
 }
 
+void readBrightness(Request &req, Response &res) {
+  res.print(isBright ? "normal" : "low");
+}
+
 void updatePower(Request &req, Response &res) {
   String body = req.readString();
   Serial.println(body);
@@ -36,8 +40,10 @@ void updateBrightness(Request &req, Response &res) {
   String body = req.readString();
   if(body == "low") {
     FastLED.setBrightness(30);
+    isBright = false;
   } else {
     FastLED.setBrightness(255);
+    isBright = true;
   }
   res.println(body);
 }
@@ -51,6 +57,7 @@ void initApi() {
   app.get("/power", &readPower);
   app.post("/power", &updatePower);
   app.post("/color/hue", &updateHue);
+  app.get("/brightness", &readBrightness);
   app.post("/brightness", &updateBrightness);
   // app.route(staticFiles());
   server.begin();

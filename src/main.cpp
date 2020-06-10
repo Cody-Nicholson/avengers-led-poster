@@ -18,9 +18,8 @@
 
 ESP8266WiFiMulti wifiMulti;
 
-boolean wasOff = false;
-boolean wasOn = false;
 bool isOff = false;
+bool isBright = true;
 
 #define COMET_TR_PIN 1
 #define COMET_TL_PIN 2
